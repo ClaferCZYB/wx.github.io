@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>祝万晓23岁生日快乐</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 引入特殊手写字体作为标题，以及衬线字体作为备用 */
+        @import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@300;400;700&display=swap');
+
+        body {
+            /* 默认字体，信件部分会单独设置宋体 */
+            font-family: 'Noto Serif SC', serif;
+            background-color: #0d1a12; /* 深林绿 */
+            color: #e8f5e9;
+            overflow-x: hidden;
+            overflow-y: hidden; /* 初始锁死，等信件读完 */
+            transition: background-color 3s ease;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 隐藏滚动条但保留功能 */
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+
+        /* 特殊书法字体类 */
+        .font-handwriting {
+            font-family: 'Ma Shan Zheng', cursive;
+        }
+
+        /* ---------------- 背景落叶特效 ---------------- */
+        #leaves-container {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .leaf {
+            position: absolute;
+            top: -20px;
+            width: 15px;
+            height: 15px;
+            background: rgba(165, 214, 167, 0.4);
+            border-radius: 0 50% 50% 50%; /* 树叶形状 */
+            transform-origin: center;
+            animation: fall linear infinite, sway 3s ease-in-out infinite alternate;
+        }
+        @keyframes fall {
+            0% { top: -20px; }
+            100% { top: 110vh; }
+        }
+        @keyframes sway {
+            0% { transform: translateX(0) rotate(45deg); }
+            100% { transform: translateX(30px) rotate(90deg); }
+        }
+
+        /* ---------------- 信封与信件 UI ---------------- */
+        #envelope-stage {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, #15291d 0%, #080f0a 100%);
+            transition: opacity 1.5s ease;
+        }
+
+        /* 信封本体 */
+        .envelope-wrapper {
+            position: relative;
+            width: 280px;
+            height: 180px;
+            background-color: #2e4a36;
+            border-radius: 8px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            cursor: pointer;
+            transition: transform 0.3s ease, opacity 0.8s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .envelope-wrapper:hover {
+            transform: translateY(-5px);
+        }
+        /* 信封的封口折线视觉 */
+        .envelope-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 50%;
+            background: #385942;
+            clip-path: polygon(0 0, 100% 0, 50% 100%);
+            border-radius: 8px 8px 0 0;
+            z-index: 2;
+        }
+        .envelope-hint {
+            position: absolute;
+            bottom: -40px;
+            font-size: 14px;
+            color: #a5d6a7;
+            letter-spacing: 2px;
+            animation: pulse 2s infinite;
+        }
+
+        /* 信纸主体 (宋体设计) */
+        .letter-paper {
+            position: absolute;
+            width: 85vw;
+            max-width: 400px;
+            max-height: 75vh;
+            background: #fdfbf7; /* 淡淡的羊皮纸白 */
+            border-radius: 4px;
+            padding: 30px 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            color: #2c2c2c;
+            /* 强制宋体 */
+            font-family: 'Songti SC', 'STSong', 'SimSun', serif;
+            font-size: 15px; /* 字体调小 */
+            line-height: 2.2;
+            letter-spacing: 1px;
+            text-align: justify;
+            overflow-y: auto;
+            
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+            pointer-events: none;
+            transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+            z-index: 10;
+        }
+        .letter-paper.is-open {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+
+        /* 下一封按钮 */
+        .next-btn {
+            margin-top: 30px;
+            padding: 10px 24px;
+            background: #2e4a36;
+            color: #e8f5e9;
+            border-radius: 30px;
+            font-family: 'Noto Serif SC', serif;
+            font-size: 14px;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: background 0.3s;
+            border: 1px solid #4caf50;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .next-btn:active { background: #1b5e20; }
+
+        /* ---------------- 交互长卷区 ---------------- */
+        .reveal-up {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 1s cubic-bezier(0.5, 0, 0, 1);
+        }
+        .reveal-up.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 迷雾画布容器 */
+        #fog-container {
+            position: relative;
+            width: 100%;
+            max-width: 320px;
+            height: 220px;
+            margin: 0 auto;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        #fog-canvas {
+            position: absolute;
+            inset: 0;
+            z-index: 10;
+            touch-action: none;
+        }
+
+        /* 视频容器 */
+        .video-frame {
+            background: #fff;
+            padding: 12px 12px 35px 12px;
+            border-radius: 2px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            transform: rotate(-2deg);
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 新增：背景音乐音频标签 (设置了loop单曲循环) -->
+    <audio id="bg-music" loop>
+        <source src="./cai23.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 落叶背景层 -->
+    <div id="leaves-container"></div>
+
+    <!-- 第一乐章：拆信封与寄语 (手动交互) -->
+    <div id="envelope-stage">
+        
+        <!-- 大标题 (特殊字体) -->
+        <h1 class="font-handwriting text-5xl md:text-6xl text-[#a5d6a7] mb-16 tracking-widest text-center" style="text-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+            祝万晓<br><span class="text-3xl mt-4 block text-[#c8e6c9]">23岁生日快乐</span>
+        </h1>
+
+        <!-- 信封UI -->
+        <div class="envelope-wrapper" id="envelope-btn" onclick="openCurrentLetter()">
+            <div class="z-10 text-[#a5d6a7] font-serif tracking-widest flex flex-col items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-2 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <span id="envelope-sender" class="text-sm">来自 周泓霜 的信件</span>
+            </div>
+            <div class="envelope-hint" id="envelope-hint">点击拆开</div>
+        </div>
+
+        <!-- 具体的信纸内容将通过 JS 动态注入到这个容器中 -->
+        <div class="letter-paper" id="letter-content">
+            <!-- 占位，由JS渲染 -->
+        </div>
+
+    </div>
+
+
+    <!-- 第二乐章：交互长卷区 -->
+    <div id="main-journey" class="hidden relative z-10 w-full max-w-2xl mx-auto px-6 pb-32 pt-[100vh]">
+        
+        <!-- 引导语 -->
+        <div class="min-h-[40vh] flex flex-col justify-center items-center reveal-up">
+            <p class="text-[#4caf50] text-sm tracking-widest animate-bounce">继续向下滑动</p>
+            <div class="mt-2 text-[#4caf50]">↓</div>
+        </div>
+
+        <!-- 互动 1：擦除迷雾 -->
+        <div class="min-h-[70vh] flex flex-col justify-center items-center reveal-up">
+            <div class="text-center text-[#618a6e] space-y-2 mb-8">
+                <p class="tracking-widest">大专办公室里那些让人疲惫的交往</p>
+                <p class="text-xs">就像是林间蒙眼的冷雾，需要你亲手去擦除。</p>
+            </div>
+            
+            <p class="text-[#a5d6a7] text-xs tracking-widest mb-4 animate-pulse">👆 用手指在下方画框内擦拭</p>
+            
+            <div id="fog-container">
+                <!-- 迷雾底下的未来 -->
+                <div class="absolute inset-0 bg-gradient-to-br from-[#e8f5e9] to-[#c8e6c9] flex flex-col justify-center items-center p-4 text-center z-0">
+                    <span class="text-4xl mb-3">🎓</span>
+                    <p class="text-[#2e4a36] font-bold text-xl mb-2">西南大学</p>
+                    <p class="text-[#4caf50] text-sm leading-relaxed">九月的银杏和樟树，<br>在等你乘凉。</p>
+                </div>
+                <!-- 画布覆盖层 -->
+                <canvas id="fog-canvas"></canvas>
+            </div>
+        </div>
+
+        <!-- 互动 2：悉心浇灌 (小树成长) -->
+        <div class="min-h-[70vh] flex flex-col justify-center items-center reveal-up mt-10">
+            <div class="text-center text-[#618a6e] mb-8">
+                <p class="tracking-widest text-sm">根系坚韧的植物，总能自己寻到肥沃土壤。</p>
+            </div>
+            
+            <div class="bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.05)] rounded-2xl p-8 w-full max-w-xs text-center backdrop-blur-sm shadow-xl">
+                <!-- 植物 emoji 容器 -->
+                <div id="plant-stage" class="text-6xl mb-6 transition-transform duration-500 transform scale-100">🌱</div>
+                
+                <p id="plant-msg" class="text-[#81c784] text-xs tracking-widest h-8 mb-4 transition-opacity duration-300">
+                    为你的23岁注入能量吧
+                </p>
+                
+                <button id="water-btn" class="px-6 py-2 bg-[#388e3c] text-white rounded-full text-sm font-bold tracking-widest shadow-lg active:scale-95 transition-transform flex items-center justify-center mx-auto">
+                    <span class="mr-2">💧</span> 浇水
+                </button>
+            </div>
+        </div>
+
+        <!-- 互动 3：花叶冷水花暗语 -->
+        <div class="min-h-[70vh] flex flex-col justify-center items-center reveal-up mt-10">
+            <div class="w-full max-w-sm text-center relative cursor-pointer group" id="secret-trigger">
+                <div class="text-5xl mb-4 transform group-hover:scale-110 transition-transform duration-300">🌿</div>
+                <p class="text-[#81c784] text-xs tracking-widest mb-6">触碰这株冷水花</p>
+                
+                <div class="h-20 flex items-center justify-center border-t border-b border-[rgba(165,214,167,0.2)] py-4">
+                    <p id="secret-quote" class="text-[#a5d6a7] text-sm italic opacity-0 transition-all duration-500 font-serif"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 最终章：视频礼物 -->
+        <div class="min-h-[100vh] flex flex-col justify-center items-center reveal-up pb-20 mt-10">
+            <h2 class="font-handwriting text-4xl text-[#a5d6a7] mb-4">欢迎来到 23 岁</h2>
+            <p class="text-[#618a6e] text-sm mb-12 tracking-widest">最后，是一份不需要拆包装的礼物。</p>
+            
+            <div class="w-full max-w-lg">
+                <div class="video-frame">
+                    <video class="w-full bg-black" controls 
+                           poster="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='500' style='background:%232e4a36;'><text x='50%' y='50%' fill='%23a5d6a7' font-size='24' font-family='sans-serif' text-anchor='middle' letter-spacing='2'>点击开启回忆 🎞️</text></svg>">
+                        <source src="./wx23.mp4" type="video/mp4">
+                        浏览器不支持视频播放。
+                    </video>
+                    <div class="text-center text-gray-500 text-xs mt-3 font-serif tracking-widest">For Wan Xiao - 2026</div>
+                </div>
+            </div>
+            
+            <p class="mt-24 text-[#81c784] text-xs tracking-widest opacity-60 flex items-center">
+                Made with <span class="text-red-400 mx-1">❤</span> by 你的朋友们
+            </p>
+        </div>
+    </div>
+
+    <script>
+        /* ================= 一、 落叶生成逻辑 ================= */
+        function createLeaves() {
+            const container = document.getElementById('leaves-container');
+            const leafCount = 25; // 适当数量的落叶
+            for (let i = 0; i < leafCount; i++) {
+                let leaf = document.createElement('div');
+                leaf.className = 'leaf';
+                // 随机大小和位置
+                let size = Math.random() * 10 + 10; 
+                leaf.style.width = size + 'px';
+                leaf.style.height = size + 'px';
+                leaf.style.left = Math.random() * 100 + 'vw';
+                
+                // 随机动画时间，制造错落感
+                let duration = Math.random() * 8 + 7;
+                leaf.style.animationDuration = duration + 's, 3s';
+                leaf.style.animationDelay = (Math.random() * 10) + 's, 0s';
+                
+                container.appendChild(leaf);
+            }
+        }
+        createLeaves();
+
+        /* ================= 二、 信件拆阅逻辑 ================= */
+        const messagesData = [
+            {
+                sender: "周泓霜",
+                content: `
+                    <p class="font-bold text-lg mb-4 text-[#2e4a36]">我们的晓晓，23岁生日快乐！</p>
+                    <p class="mb-3">还记得我们一起在操场数星星的夜晚吗？你说要把最亮的那颗摘下来当生日蜡烛。如今你已是大人模样，却依然保持着眼里的光。</p>
+                    <p class="mb-3">这世上有些人生来就是暖的，你就是其中一个。23岁，是花开最好的时节，也是刚刚学会如何与世界温柔相处的年纪。愿你继续像现在这样，既有追风的勇气，也有停下来的从容。</p>
+                    <p class="mb-3">新的一岁，愿你的每一天都被善意包围，愿你的每一个选择都通向心之所向。你值得这世间所有的美好——包括那个会在下雨天为你撑伞的人，和那些让你眼角眉梢都亮起来的时刻。</p>
+                    <p class="mb-6 font-bold text-[#4caf50]">要做永远快乐的大人呀！</p>
+                    <div class="text-right text-[#666] text-sm italic">—— 永远支持你的 周泓霜</div>
+                `
+            },
+            {
+                sender: "王汉滨",
+                content: `
+                    <p class="font-bold text-lg mb-4 text-[#2e4a36]">老万同志，23岁生日快乐！</p>
+                    <p class="mb-3">认识你这么多年，最大的发现就是：世界上真的有“越活越回去”的人——你的笑点比初中时还低，但担当却比高中时还重。</p>
+                    <p class="mb-3">23岁，是个奇妙的年纪。说小，已经开始直面人生的各种抉择；说大，在很多人眼里还是“小朋友”。但我知道，你从来不需要被定义。从我们一起翻墙买辣条，到你如今认真规划未来的样子，你一直都是那个能用最轻盈的姿态扛起最重行李的人。</p>
+                    <p class="mb-3">愿你新的一岁，熬夜时有咖啡，加班时有夜宵，难过时有拥抱，快乐时有分享。遇到的人都是善意，走过的路都有风景。最重要的是——保持你那标志性的“万氏大笑”，那是能治愈周围所有人的魔法。</p>
+                    <p class="mb-6 font-bold text-[#4caf50]">前程似锦，我们都在。</p>
+                    <div class="text-right text-[#666] text-sm italic">—— 老友 王汉滨</div>
+                `
+            },
+            {
+                sender: "潘诗宇",
+                content: `
+                    <p class="font-bold text-lg mb-4 text-[#2e4a36]">亲爱的晓晓，23岁生辰吉乐！</p>
+                    <p class="mb-3">时光真是奇妙，转眼间我们都从那个在走廊里讨论漫画的女孩，长成了要在职场独当一面的大人。但你啊，始终是那个会在深夜给我发月亮照片的人。</p>
+                    <p class="mb-3">23岁，像一首刚写完副歌的歌，主旋律已经响起，还有大段精彩的间奏等待谱曲。这一年，愿你学会更爱自己——爱自己的敏感，爱自己的执着，也爱自己偶尔的脆弱。你是这样好的一个人，好到我希望世界也能同样温柔待你。</p>
+                    <p class="mb-3">未来山高水长，但我知道，无论走到哪里，你都会带着那份独特的通透与真诚。累了就回头看看，我们永远是你不用解释的存在。</p>
+                    <p class="mb-6 font-bold text-[#4caf50]">新的一岁，多喜乐，长安宁。愿你永远是自己人生的主角。</p>
+                    <div class="text-right text-[#666] text-sm italic">—— 爱你的 潘诗宇</div>
+                `
+            }
+        ];
+
+        let currentMsgIndex = 0;
+        const envelopeBtn = document.getElementById('envelope-btn');
+        const letterContent = document.getElementById('letter-content');
+        const senderText = document.getElementById('envelope-sender');
+        const envelopeHint = document.getElementById('envelope-hint');
+
+        // 初始化发件人名字
+        senderText.innerText = `来自 ${messagesData[0].sender} 的信件`;
+
+        // 点击信封，展开信件
+        function openCurrentLetter() {
+            // 隐藏信封
+            envelopeBtn.style.opacity = '0';
+            envelopeBtn.style.pointerEvents = 'none';
+            envelopeHint.style.display = 'none';
+
+            // 渲染信件内容
+            let btnText = currentMsgIndex < messagesData.length - 1 ? "拆下一封信" : "收起信件，开启旅程";
+            letterContent.innerHTML = messagesData[currentMsgIndex].content + 
+                `<button class="next-btn" onclick="handleNextClick()">${btnText}</button>`;
+            
+            // 延迟一点显示信件，做动画过渡
+            setTimeout(() => {
+                letterContent.classList.add('is-open');
+                // 滚动条回到顶部
+                letterContent.scrollTop = 0;
+            }, 400);
+        }
+
+        // 点击信件内的下一步按钮
+        window.handleNextClick = function() {
+            letterContent.classList.remove('is-open');
+            
+            setTimeout(() => {
+                currentMsgIndex++;
+                if (currentMsgIndex < messagesData.length) {
+                    // 准备下一封信封
+                    senderText.innerText = `来自 ${messagesData[currentMsgIndex].sender} 的信件`;
+                    envelopeBtn.style.opacity = '1';
+                    envelopeBtn.style.pointerEvents = 'auto';
+                    envelopeHint.style.display = 'block';
+                } else {
+                    // 所有信件读完，结束序章
+                    endPrologue();
+                }
+            }, 800); // 等待信纸收起动画完成
+        };
+
+        function endPrologue() {
+            const stage = document.getElementById('envelope-stage');
+            stage.style.opacity = '0';
+            
+            // 背景改变，解锁滚动
+            document.body.style.backgroundColor = '#112217'; 
+            
+            setTimeout(() => {
+                stage.style.display = 'none';
+                document.getElementById('main-journey').style.display = 'block';
+                document.body.style.overflowY = 'auto'; 
+                
+                initScrollObserver();
+                initFogCanvas();
+            }, 1500);
+        }
+
+        /* ================= 三、 滚动显现逻辑 ================= */
+        function initScrollObserver() {
+            const reveals = document.querySelectorAll('.reveal-up');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                    }
+                });
+            }, { threshold: 0.2 });
+            reveals.forEach(el => observer.observe(el));
+        }
+
+        /* ================= 四、 擦除迷雾交互 ================= */
+        function initFogCanvas() {
+            const container = document.getElementById('fog-container');
+            const canvas = document.getElementById('fog-canvas');
+            const ctx = canvas.getContext('2d');
+            let isDrawing = false;
+            let brushRadius = 30;
+
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+
+            // 绘制灰绿色迷雾
+            ctx.fillStyle = '#4a6b53'; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'rgba(255,255,255,0.4)';
+            ctx.font = '14px "Noto Serif SC", serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('用手指擦去雾气...', canvas.width/2, canvas.height/2);
+
+            ctx.globalCompositeOperation = 'destination-out';
+
+            function getPointerPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return { x: clientX - rect.left, y: clientY - rect.top };
+            }
+
+            function draw(e) {
+                if (!isDrawing) return;
+                const pos = getPointerPos(e);
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, brushRadius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            function checkClearance() {
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                let transparent = 0;
+                const total = imageData.data.length / 4;
+                for (let i = 3; i < imageData.data.length; i += 16) { 
+                    if (imageData.data[i] === 0) transparent++;
+                }
+                if (transparent / (total/4) > 0.35) { // 擦除35%即可
+                    canvas.style.transition = 'opacity 1s ease';
+                    canvas.style.opacity = '0';
+                    setTimeout(() => canvas.style.display = 'none', 1000);
+                }
+            }
+
+            canvas.addEventListener('mousedown', e => { isDrawing = true; draw(e); });
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', () => { isDrawing = false; checkClearance(); });
+            canvas.addEventListener('mouseleave', () => isDrawing = false);
+
+            canvas.addEventListener('touchstart', e => { isDrawing = true; draw(e); }, {passive: true});
+            canvas.addEventListener('touchmove', e => {
+                if (e.cancelable) e.preventDefault(); // 防止滚动屏幕
+                draw(e);
+            }, {passive: false});
+            canvas.addEventListener('touchend', () => { isDrawing = false; checkClearance(); });
+        }
+
+        /* ================= 五、 浇水互动 (小树成长) ================= */
+        const waterBtn = document.getElementById('water-btn');
+        const plantStage = document.getElementById('plant-stage');
+        const plantMsg = document.getElementById('plant-msg');
+        let growthLevel = 0;
+
+        waterBtn.addEventListener('click', () => {
+            growthLevel++;
+            plantMsg.style.opacity = '0'; // 消息渐变过渡
+            
+            // 点击时的放大缩小特效
+            plantStage.style.transform = 'scale(1.2)';
+            setTimeout(() => plantStage.style.transform = 'scale(1)', 300);
+
+            setTimeout(() => {
+                if (growthLevel === 1) {
+                    plantStage.innerText = '🌿';
+                    plantMsg.innerText = '汲取养分，冒出新芽';
+                } else if (growthLevel === 2) {
+                    plantStage.innerText = '🪴';
+                    plantMsg.innerText = '扎根土壤，逐渐强壮';
+                } else if (growthLevel >= 3) {
+                    plantStage.innerText = '🌳';
+                    plantMsg.innerText = '长成参天大树啦！';
+                    plantStage.style.fontSize = '5rem';
+                    waterBtn.style.display = 'none'; // 树长大了，隐藏按钮
+                }
+                plantMsg.style.opacity = '1';
+            }, 300);
+        });
+
+        /* ================= 六、 冷水花暗语 ================= */
+        const secretTrigger = document.getElementById('secret-trigger');
+        const secretQuote = document.getElementById('secret-quote');
+        let secretClickCount = 0;
+
+        secretTrigger.addEventListener('click', () => {
+            secretClickCount++;
+            secretQuote.style.opacity = '0'; // 触发淡出
+            
+            setTimeout(() => {
+                if (secretClickCount === 1) {
+                    secretQuote.innerText = "“一般很忧伤时，会短暂成为一个成熟人。”";
+                    secretQuote.className = 'text-[#81c784] text-sm italic transition-all duration-500 font-serif';
+                } else {
+                    secretQuote.innerText = "但今天，卸下伪装，做个被爱包围的小孩吧。";
+                    secretQuote.className = 'text-[#4caf50] font-bold text-base transition-all duration-500 font-serif';
+                }
+                // 修复：强制通过内联样式把透明度设回1，覆盖掉前面的0
+            secretQuote.style.opacity = '1';
+        }, 400);
+    });
+
+    /* ================= 七、 音乐与视频联动控制 ================= */
+    const bgMusic = document.getElementById('bg-music');
+    const birthdayVideo = document.querySelector('video');
+    let isMusicStarted = false;
+
+    // 监听屏幕的第一次交互点击来启动音乐（解决浏览器禁止网页静音自动播放的限制）
+    // 当万晓第一次点击“拆开信封”或触碰屏幕时，背景音乐就会悄悄响起
+    document.body.addEventListener('click', function() {
+        if (!isMusicStarted) {
+            bgMusic.play().catch(err => console.log("BGM播放受限:", err));
+            isMusicStarted = true;
+        }
+    });
+
+    // 视频播放时：暂停背景音乐
+    birthdayVideo.addEventListener('play', () => {
+        bgMusic.pause();
+    });
+
+    // 视频暂停或结束时：恢复背景音乐
+    birthdayVideo.addEventListener('pause', () => {
+        // 只有当音乐曾经被启动过，才恢复播放
+        if(isMusicStarted) bgMusic.play();
+    });
+    birthdayVideo.addEventListener('ended', () => {
+        if(isMusicStarted) bgMusic.play();
+    });
+</script>
+</body>
+</html>
