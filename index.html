@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>祝万晓23岁生日快乐</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@300;400;700&display=swap');
+
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background-color: #08120b; /* 极深的林绿色，几乎接近黑 */
+            color: #e8f5e9;
+            overflow-x: hidden;
+            overflow-y: hidden; /* 初始锁死滚动 */
+            transition: background-color 3s ease;
+            -webkit-font-smoothing: antialiased;
+            touch-action: pan-x pan-y; /* 优化移动端触摸 */
+        }
+
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+
+        .font-handwriting { font-family: 'Ma Shan Zheng', cursive; }
+
+        /* ---------------- 背景落叶特效 (银杏与樟树的隐喻) ---------------- */
+        #leaves-container {
+            position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+        }
+        .leaf {
+            position: absolute; top: -20px; width: 12px; height: 12px;
+            background: rgba(165, 214, 167, 0.3); border-radius: 0 50% 50% 50%;
+            transform-origin: center;
+            animation: fall linear infinite, sway 4s ease-in-out infinite alternate;
+        }
+        @keyframes fall { 0% { top: -20px; } 100% { top: 110vh; } }
+        @keyframes sway { 0% { transform: translateX(0) rotate(45deg); } 100% { transform: translateX(40px) rotate(90deg); } }
+
+        /* ---------------- 全新序章：光之芽 (Seed of Light) ---------------- */
+        #seed-stage {
+            position: fixed; inset: 0; z-index: 50;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: radial-gradient(circle at center, #112217 0%, #050a06 100%);
+            transition: opacity 2s ease;
+        }
+
+        /* 核心光团 */
+        .light-seed {
+            width: 80px; height: 80px;
+            background: rgba(165, 214, 167, 0.1);
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(165, 214, 167, 0.2), inset 0 0 20px rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+            position: relative;
+            display: flex; justify-content: center; align-items: center;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            /* 呼吸动画 */
+            animation: pulse-seed 3s infinite alternate;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        @keyframes pulse-seed {
+            0% { transform: scale(1); box-shadow: 0 0 20px rgba(165, 214, 167, 0.2); }
+            100% { transform: scale(1.1); box-shadow: 0 0 40px rgba(165, 214, 167, 0.5); }
+        }
+
+        /* 光团内部的核心光源 */
+        .core-light {
+            width: 20px; height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 30px 10px rgba(255, 255, 255, 0.8);
+            transition: transform 0.1s;
+        }
+
+        /* 提示文字 */
+        .seed-hint {
+            margin-top: 40px; font-size: 14px; color: #81c784;
+            letter-spacing: 4px; opacity: 0.8; font-weight: 300;
+            transition: opacity 0.5s;
+        }
+
+        /* 注入能量时的环形进度 */
+        .progress-ring {
+            position: absolute; top: -10px; left: -10px; right: -10px; bottom: -10px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-top-color: #a5d6a7;
+            opacity: 0;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* ---------------- 光芒绽放后的星空字 ---------------- */
+        #constellation-stage {
+            position: absolute; inset: 0; z-index: 40; pointer-events: none;
+            display: none; opacity: 0; transition: opacity 2s ease;
+        }
+
+        .star-quote {
+            position: absolute; color: #e8f5e9; text-shadow: 0 0 15px rgba(165, 214, 167, 0.6);
+            opacity: 0; transition: opacity 1.5s ease, transform 1.5s ease;
+            max-width: 280px; line-height: 1.8;
+        }
+        
+        .quote-author {
+            display: block; font-size: 12px; color: #81c784; margin-top: 8px; letter-spacing: 2px;
+            font-style: italic;
+        }
+
+        /* ---------------- 长卷交互区通用类 ---------------- */
+        .reveal-up { opacity: 0; transform: translateY(40px); transition: all 1s cubic-bezier(0.5, 0, 0, 1); }
+        .reveal-up.is-visible { opacity: 1; transform: translateY(0); }
+
+        #fog-container {
+            position: relative; width: 100%; max-width: 320px; height: 260px;
+            margin: 0 auto; border-radius: 12px; overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        #fog-canvas { position: absolute; inset: 0; z-index: 10; touch-action: none; }
+        
+        .video-frame {
+            background: rgba(255, 255, 255, 0.05); padding: 12px 12px 35px 12px; border-radius: 8px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4); backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- BGM -->
+    <audio id="bgm-player" src="./cai23.mp3" loop preload="auto"></audio>
+
+    <div id="leaves-container"></div>
+
+    <!-- 序章：光之芽 (能量注入) -->
+    <div id="seed-stage">
+        <h1 class="font-handwriting text-5xl md:text-6xl text-[#a5d6a7] mb-24 tracking-widest text-center opacity-90" style="text-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+            万晓<br><span class="text-3xl mt-6 block text-[#c8e6c9] font-serif">23岁生日快乐！</span>
+        </h1>
+
+        <div class="light-seed" id="light-seed">
+            <div class="progress-ring" id="progress-ring"></div>
+            <div class="core-light" id="core-light"></div>
+        </div>
+        
+        <div class="seed-hint" id="seed-hint">长按注入能量</div>
+    </div>
+
+    <!-- 绽放阶段：错落的星空寄语 -->
+    <div id="constellation-stage">
+        <!-- 位置通过 JS 动态计算，以适应不同手机屏幕 -->
+        <div class="star-quote font-serif text-[15px]" id="quote-1" style="top: 15%; left: 10%;">
+            “去做永远快乐的大人呀，愿你的每一天都被善意包围。”
+            <span class="quote-author">—— 泓霜</span>
+        </div>
+        
+        <div class="star-quote font-serif text-[15px] text-right" id="quote-2" style="top: 45%; right: 10%;">
+            “晓晓姐，愿你宏志不坠、阔步向前，过往如云烟，未来可期盼，加油加油！”
+            <span class="quote-author">—— 汉滨</span>
+        </div>
+        
+        <div class="star-quote font-serif text-[15px]" id="quote-3" style="bottom: 25%; left: 15%;">
+            “未来山高水长，愿你永远是自己人生的主角，长安宁。”
+            <span class="quote-author">—— 诗宇</span>
+        </div>
+
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 text-[#4caf50] text-xs tracking-widest animate-bounce opacity-0 transition-opacity duration-1000" id="scroll-down-hint">
+  向下滑动
+        </div>
+    </div>
+
+
+    <!-- 交互长卷区 -->
+    <div id="main-journey" class="hidden relative z-10 w-full max-w-2xl mx-auto px-6 pb-32 pt-[100vh]">
+        
+        <!-- 迷雾隐喻升级 -->
+        <div class="min-h-[70vh] flex flex-col justify-center items-center reveal-up">
+            <div class="text-center text-[#81c784] space-y-3 mb-10 font-serif">
+                <p class="tracking-widest text-lg">那些让人疲惫的交往</p>
+                <p class="text-[13px] opacity-70">就像林间蒙眼的冷雾，需要你亲手擦除。</p>
+            </div>
+            
+            <p class="text-[#a5d6a7] text-xs tracking-widest mb-4 animate-pulse">👆 在画框内滑动手指</p>
+            
+            <div id="fog-container">
+                <div class="absolute inset-0 bg-gradient-to-br from-[#1b5e20] to-[#0a1f10] flex flex-col justify-center items-center p-6 text-center z-0 border border-[#2e4a36] rounded-xl">
+                    <span class="text-5xl mb-4">🎓</span>
+                    <p class="text-[#a5d6a7] font-bold text-xl mb-3 tracking-widest">西南大学</p>
+                    <p class="text-[#81c784] text-sm leading-relaxed font-serif">
+                        九月的银杏与樟树<br>
+                        还有那尊守望苍穹的伟人像前的阶梯<br>
+                        在等你拾级而上。
+                    </p>
+                </div>
+                <canvas id="fog-canvas"></canvas>
+            </div>
+        </div>
+
+        <!-- 小树生长 -->
+        <div class="min-h-[70vh] flex flex-col justify-center items-center reveal-up mt-20">
+            <div class="text-center text-[#81c784] mb-10 font-serif">
+                <p class="tracking-widest text-sm">根系坚韧的植物，总能自己寻到肥沃土壤。</p>
+            </div>
+            <div class="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-full w-64 h-64 flex flex-col items-center justify-center backdrop-blur-md shadow-2xl relative">
+                <div id="plant-stage" class="text-6xl mb-4 transition-transform duration-700 transform scale-100">🌱</div>
+                <p id="plant-msg" class="text-[#a5d6a7] text-[11px] tracking-widest h-6 mb-4 transition-opacity duration-300 absolute bottom-8">持续点击，注入生机</p>
+                <!-- 隐形的巨大点击区域覆盖整个圆圈 -->
+                <div id="water-area" class="absolute inset-0 cursor-pointer rounded-full z-10"></div>
+            </div>
+        </div>
+
+        <!-- 冷水花暗语 -->
+        <div class="min-h-[70vh] flex flex-col justify-center items-center reveal-up mt-20">
+            <div class="w-full max-w-sm text-center relative group" id="secret-trigger">
+                <div class="text-5xl mb-6 transform group-hover:scale-110 transition-transform duration-500 cursor-pointer inline-block" style="filter: drop-shadow(0 0 10px rgba(165,214,167,0.3));">🌿</div>
+                <p class="text-[#81c784] text-xs tracking-widest mb-8 opacity-60">触碰冷水花</p>
+                
+                <div class="min-h-[80px] flex items-center justify-center py-4 relative">
+                    <!-- 两句话重叠放置，通过透明度切换 -->
+                    <p id="secret-quote-1" class="absolute text-[#a5d6a7] text-sm italic opacity-0 transition-opacity duration-1000 font-serif w-full px-4">
+                        “一般很忧伤时，会短暂成为一个成熟人。”
+                    </p>
+                    <p id="secret-quote-2" class="absolute text-[#81c784] font-bold text-[15px] opacity-0 transition-opacity duration-1000 font-serif w-full px-4 tracking-wide">
+                        但今天，请卸下伪装，做个被爱包围的小孩。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 视频最终章 -->
+        <div class="min-h-[100vh] flex flex-col justify-center items-center reveal-up pb-20 mt-20">
+            <div class="w-10 h-10 border-t border-l border-[#4caf50] mb-8 opacity-50 transform rotate-45"></div>
+            <p class="text-[#81c784] text-sm mb-12 tracking-widest font-serif">最后，一份无需拆阅的礼物。</p>
+            
+            <div class="w-full max-w-lg relative z-20">
+                <div class="video-frame">
+                    <video id="main-video" class="w-full bg-black rounded" controls playsinline
+                           poster="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='450' style='background:%230a1f10;'><text x='50%' y='50%' fill='%23a5d6a7' font-size='20' font-family='sans-serif' text-anchor='middle' letter-spacing='4'>触碰开启 🎬</text></svg>">
+                        <source src="./wx23.mp4" type="video/mp4">
+                        浏览器不支持视频播放。
+                    </video>
+                </div>
+            </div>
+            
+            <p class="mt-32 text-[#4caf50] text-[10px] tracking-[0.3em] opacity-40 uppercase">
+                2026 五月初八 · For Xiao
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. 背景叶片 ---
+        function createLeaves() {
+            const container = document.getElementById('leaves-container');
+            for (let i = 0; i < 20; i++) {
+                let leaf = document.createElement('div');
+                leaf.className = 'leaf';
+                let size = Math.random() * 8 + 6; 
+                leaf.style.width = size + 'px'; leaf.style.height = size + 'px';
+                leaf.style.left = Math.random() * 100 + 'vw';
+                leaf.style.animationDuration = (Math.random() * 10 + 10) + 's, 4s';
+                leaf.style.animationDelay = (Math.random() * 10) + 's, 0s';
+                container.appendChild(leaf);
+            }
+        }
+        createLeaves();
+
+        // --- 2. BGM 控制 ---
+        const bgmPlayer = document.getElementById('bgm-player');
+        const mainVideo = document.getElementById('main-video');
+        let isBgmStarted = false;
+
+        mainVideo.addEventListener('play', () => bgmPlayer.pause());
+        mainVideo.addEventListener('pause', () => bgmPlayer.play());
+        mainVideo.addEventListener('ended', () => bgmPlayer.play());
+
+        // --- 3. 核心长按交互 (光之芽) ---
+        const seed = document.getElementById('light-seed');
+        const coreLight = document.getElementById('core-light');
+        const ring = document.getElementById('progress-ring');
+        const hint = document.getElementById('seed-hint');
+        const seedStage = document.getElementById('seed-stage');
+        const constellationStage = document.getElementById('constellation-stage');
+        
+        let pressTimer;
+        let scaleValue = 1;
+        let isHolding = false;
+        let isCompleted = false;
+
+        function startPress(e) {
+            if(isCompleted) return;
+            if (e.type === 'touchstart') e.preventDefault(); // 防止移动端选中
+            
+            // 唤醒BGM
+            if (!isBgmStarted) {
+                bgmPlayer.play().catch(e => console.log("BGM error"));
+                isBgmStarted = true;
+            }
+
+            isHolding = true;
+            hint.style.opacity = '0';
+            ring.style.opacity = '1';
+            
+            // 逐渐变大变亮
+            pressTimer = setInterval(() => {
+                scaleValue += 0.05;
+                coreLight.style.transform = `scale(${scaleValue})`;
+                seed.style.boxShadow = `0 0 ${20 * scaleValue}px rgba(165, 214, 167, ${0.2 * scaleValue})`;
+                
+                // 长按大约 1.5 秒后触发爆发
+                if (scaleValue >= 4) {
+                    clearInterval(pressTimer);
+                    triggerBurst();
+                }
+            }, 50);
+        }
+
+        function stopPress() {
+            if(isCompleted) return;
+            isHolding = false;
+            clearInterval(pressTimer);
+            if(scaleValue < 4) {
+                // 如果没按够时间，弹回原状
+                scaleValue = 1;
+                coreLight.style.transform = `scale(1)`;
+                ring.style.opacity = '0';
+                hint.style.opacity = '0.8';
+                seed.style.boxShadow = `0 0 20px rgba(165, 214, 167, 0.2)`;
+            }
+        }
+
+        // 监听鼠标和触摸事件
+        seed.addEventListener('mousedown', startPress);
+        seed.addEventListener('mouseup', stopPress);
+        seed.addEventListener('mouseleave', stopPress);
+        seed.addEventListener('touchstart', startPress);
+        seed.addEventListener('touchend', stopPress);
+        seed.addEventListener('touchcancel', stopPress);
+
+        // 爆发动画
+        function triggerBurst() {
+            isCompleted = true;
+            // 屏幕瞬间白屏闪烁效果
+            seedStage.style.background = '#fff';
+            
+            setTimeout(() => {
+                // 隐藏序章
+                seedStage.style.opacity = '0';
+                setTimeout(() => { seedStage.style.display = 'none'; }, 2000);
+                
+                // 展现星空寄语
+                constellationStage.style.display = 'block';
+                // 强制重绘
+                void constellationStage.offsetWidth;
+                constellationStage.style.opacity = '1';
+                
+                // 逐个显示寄语
+                setTimeout(() => showQuote('quote-1', 0), 1000);
+                setTimeout(() => showQuote('quote-2', 20), 4000);
+                setTimeout(() => showQuote('quote-3', 0), 7000);
+                
+                // 显示向下滚动提示并解锁长卷
+                setTimeout(() => {
+                    document.getElementById('scroll-down-hint').style.opacity = '1';
+                    document.getElementById('main-journey').style.display = 'block';
+                    document.body.style.overflowY = 'auto'; // 解锁滚动
+                    initScrollObserver();
+                    initFogCanvas();
+                }, 10000);
+
+            }, 200);
+        }
+
+        function showQuote(id, translateY) {
+            const el = document.getElementById(id);
+            el.style.transform = `translateY(${translateY}px)`;
+            el.style.opacity = '1';
+        }
+
+
+        // --- 4. 长卷通用动画 ---
+        function initScrollObserver() {
+            const reveals = document.querySelectorAll('.reveal-up');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) { entry.target.classList.add('is-visible'); }
+                });
+            }, { threshold: 0.15 });
+            reveals.forEach(el => observer.observe(el));
+        }
+
+        // --- 5. 擦除迷雾 ---
+        function initFogCanvas() {
+            const container = document.getElementById('fog-container');
+            const canvas = document.getElementById('fog-canvas');
+            const ctx = canvas.getContext('2d');
+            let isDrawing = false, brushRadius = 35; // 加大笔刷更好擦
+            canvas.width = container.offsetWidth; canvas.height = container.offsetHeight;
+            
+            ctx.fillStyle = '#2a3b30'; // 更深沉的雾气
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.font = '14px "Noto Serif SC", serif';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText('抹去从前的阴霾...', canvas.width/2, canvas.height/2);
+            
+            ctx.globalCompositeOperation = 'destination-out';
+
+            function getPointerPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return { x: clientX - rect.left, y: clientY - rect.top };
+            }
+            function draw(e) {
+                if (!isDrawing) return;
+                const pos = getPointerPos(e);
+                ctx.beginPath(); ctx.arc(pos.x, pos.y, brushRadius, 0, Math.PI * 2); ctx.fill();
+            }
+            function checkClearance() {
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                let transparent = 0; const total = imageData.data.length / 4;
+                for (let i = 3; i < imageData.data.length; i += 16) { if (imageData.data[i] === 0) transparent++; }
+                if (transparent / (total/4) > 0.4) { // 擦除40%
+                    canvas.style.transition = 'opacity 1.5s ease'; canvas.style.opacity = '0';
+                    setTimeout(() => canvas.style.display = 'none', 1500);
+                }
+            }
+            canvas.addEventListener('mousedown', e => { isDrawing = true; draw(e); });
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', () => { isDrawing = false; checkClearance(); });
+            canvas.addEventListener('mouseleave', () => isDrawing = false);
+            canvas.addEventListener('touchstart', e => { isDrawing = true; draw(e); }, {passive: true});
+            canvas.addEventListener('touchmove', e => { if (e.cancelable) e.preventDefault(); draw(e); }, {passive: false});
+            canvas.addEventListener('touchend', () => { isDrawing = false; checkClearance(); });
+        }
+
+        // --- 6. 浇水长大 ---
+        const waterArea = document.getElementById('water-area');
+        const plantStage = document.getElementById('plant-stage');
+        const plantMsg = document.getElementById('plant-msg');
+        let growthLevel = 0;
+        waterArea.addEventListener('click', () => {
+            if(growthLevel >= 3) return;
+            growthLevel++; 
+            plantMsg.style.opacity = '0'; 
+            plantStage.style.transform = 'scale(1.2)';
+            
+            setTimeout(() => {
+                plantStage.style.transform = 'scale(1)';
+                if (growthLevel === 1) { 
+                    plantStage.innerText = '🌿'; 
+                    plantMsg.innerText = '汲取养分，冒出新芽'; 
+                } else if (growthLevel === 2) { 
+                    plantStage.innerText = '🪴'; 
+                    plantMsg.innerText = '扎根土壤，逐渐强壮'; 
+                } else if (growthLevel === 3) { 
+                    plantStage.innerText = '🌳'; 
+                    plantMsg.innerText = '长成参天大树啦！'; 
+                    plantStage.style.fontSize = '6rem'; 
+                }
+                plantMsg.style.opacity = '1';
+            }, 400);
+        });
+
+        // --- 7. 冷水花暗语 (修复了覆盖问题) ---
+        const secretTrigger = document.getElementById('secret-trigger');
+        const q1 = document.getElementById('secret-quote-1');
+        const q2 = document.getElementById('secret-quote-2');
+        let secretClickCount = 0;
+        
+        secretTrigger.addEventListener('click', () => {
+            secretClickCount++;
+            if (secretClickCount === 1) {
+                q1.style.opacity = '1';
+            } else if (secretClickCount === 2) {
+                q1.style.opacity = '0';
+                setTimeout(() => { q2.style.opacity = '1'; }, 500); // 等第一句淡出后，第二句浮现
+            }
+        });
+    </script>
+</body>
+</html>
